@@ -20,6 +20,16 @@ import { EventEmitter } from 'events'
 import * as fs          from 'fs'
 import * as path        from 'path'
 
+// import {
+//   Browser,
+//   Cookie,
+//   Dialog,
+//   ElementHandle,
+//   launch,
+//   Page,
+// }                       from 'puppeteer'
+
+// use electron-driver instead
 import {
   Browser,
   Cookie,
@@ -27,7 +37,7 @@ import {
   ElementHandle,
   launch,
   Page,
-}                       from 'puppeteer'
+}                          from './electron-driver'
 import StateSwitch      from 'state-switch'
 import { parseString }  from 'xml2js'
 

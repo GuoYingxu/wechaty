@@ -88,6 +88,7 @@ if (/verbose|silly/i.test(log.level())) {
 export type PuppetName = 'web'
                         | 'android'
                         | 'ios'
+                        | 'electron'
 
 export interface DefaultSetting {
   DEFAULT_HEAD     : number,

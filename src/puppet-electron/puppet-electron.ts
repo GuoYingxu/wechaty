@@ -61,7 +61,7 @@ import * as bl from 'bl'
 export type PuppetFoodType = 'scan' | 'ding'
 export type ScanFoodType   = 'scan' | 'login' | 'logout'
 
-export class PuppetWeb extends Puppet {
+export class PuppetElectron extends Puppet {
   public bridge   : Bridge
   public scanInfo : ScanInfo | null
 
@@ -84,11 +84,11 @@ export class PuppetWeb extends Puppet {
   }
 
   public toString() {
-    return `PuppetWeb<${this.options.profile.name}>`
+    return `PuppetElectron<${this.options.profile.name}>`
   }
 
   public async init(): Promise<void> {
-    log.verbose('PuppetWeb', `init() with ${this.options.profile}`)
+    log.verbose('PuppetElectron', `init() with ${this.options.profile}`)
 
     this.state.on('pending')
 
@@ -97,7 +97,7 @@ export class PuppetWeb extends Puppet {
       this.initWatchdogForScan()
 
       this.bridge = await this.initBridge(this.options.profile)
-      log.verbose('PuppetWeb', 'initBridge() done')
+      log.verbose('PuppetElectron', 'initBridge() done')
 
       /**
        *  state must set to `live`
@@ -134,7 +134,7 @@ export class PuppetWeb extends Puppet {
   }
 
   public initWatchdogForPuppet(): void {
-    log.verbose('PuppetWeb', 'initWatchdogForPuppet()')
+    log.verbose('PuppetElectron', 'initWatchdogForPuppet()')
 
     const puppet = this
     const dog    = this.puppetWatchdog
@@ -254,7 +254,7 @@ export class PuppetWeb extends Puppet {
 
     if (this.state.off()) {
       const e = new Error('initBridge() found targetState != live, no init anymore')
-      log.warn('PuppetWeb', e.message)
+      log.warn('PuppetElectron', e.message)
       throw e
     }
 
@@ -278,7 +278,7 @@ export class PuppetWeb extends Puppet {
     try {
       await this.bridge.init()
     } catch (e) {
-      log.error('PuppetWeb', 'initBridge() exception: %s', e.message)
+      log.error('PuppetElectron', 'initBridge() exception: %s', e.message)
       await this.bridge.quit().catch(console.error)
       this.emit('error', e)
 
@@ -290,19 +290,19 @@ export class PuppetWeb extends Puppet {
   }
 
   public async reset(reason?: string): Promise<void> {
-    log.verbose('PuppetWeb', 'reset(%s)', reason)
+    log.verbose('PuppetElectron', 'reset(%s)', reason)
     try {
       await this.bridge.quit()
       await this.bridge.init()
-      log.silly('PuppetWeb', 'reset() done')
+      log.silly('PuppetElectron', 'reset() done')
     } catch (err) {
-      log.error('PuppetWeb', 'reset(%s) bridge.{quit,init}() exception: %s', reason, err)
+      log.error('PuppetElectron', 'reset(%s) bridge.{quit,init}() exception: %s', reason, err)
       this.emit('error', err)
     }
   }
 
   public logined(): boolean {
-    log.warn('PuppetWeb', 'logined() DEPRECATED. use logonoff() instead.')
+    log.warn('PuppetElectron', 'logined() DEPRECATED. use logonoff() instead.')
     return this.logonoff()
   }
 
@@ -314,12 +314,12 @@ export class PuppetWeb extends Puppet {
    * get self contact
    */
   public self(): Contact {
-    log.verbose('PuppetWeb', 'self()')
+    log.verbose('PuppetElectron', 'self()')
 
     if (this.user) {
       return this.user
     }
-    throw new Error('PuppetWeb.self() no this.user')
+    throw new Error('PuppetElectron.self() no this.user')
   }
 
   private async getBaseRequest(): Promise<any> {
@@ -328,7 +328,7 @@ export class PuppetWeb extends Puppet {
       const obj = JSON.parse(json)
       return obj.BaseRequest
     } catch (e) {
-      log.error('PuppetWeb', 'send() exception: %s', e.message)
+      log.error('PuppetElectron', 'send() exception: %s', e.message)
       Raven.captureException(e)
       throw e
     }
@@ -405,7 +405,7 @@ export class PuppetWeb extends Puppet {
       Cookie: cookie.map(c => c.name + '=' + c.value).join('; '),
     }
 
-    log.silly('PuppetWeb', 'uploadMedia() headers:%s', JSON.stringify(headers))
+    log.silly('PuppetElectron', 'uploadMedia() headers:%s', JSON.stringify(headers))
 
     const uploadMediaRequest = {
       BaseRequest:   baseRequest,
@@ -459,18 +459,18 @@ export class PuppetWeb extends Puppet {
               } else {
                 let obj = body
                 if (typeof body !== 'object') {
-                  log.silly('PuppetWeb', 'updateMedia() typeof body = %s', typeof body)
+                  log.silly('PuppetElectron', 'updateMedia() typeof body = %s', typeof body)
                   try {
                     obj = JSON.parse(body)
                   } catch (e) {
-                    log.error('PuppetWeb', 'updateMedia() body = %s', body)
-                    log.error('PuppetWeb', 'updateMedia() exception: %s', e)
+                    log.error('PuppetElectron', 'updateMedia() body = %s', body)
+                    log.error('PuppetElectron', 'updateMedia() exception: %s', e)
                     this.emit('error', e)
                   }
                 }
                 if (typeof obj !== 'object' || obj.BaseResponse.Ret !== 0) {
                   const errMsg = obj.BaseResponse || 'api return err'
-                  log.silly('PuppetWeb', 'uploadMedia() checkUpload err:%s \nreq:%s\nret:%s', JSON.stringify(errMsg), JSON.stringify(r), body)
+                  log.silly('PuppetElectron', 'uploadMedia() checkUpload err:%s \nreq:%s\nret:%s', JSON.stringify(errMsg), JSON.stringify(r), body)
                   reject(new Error('chackUpload err:' + JSON.stringify(errMsg)))
                 }
                 resolve({
@@ -484,11 +484,11 @@ export class PuppetWeb extends Puppet {
           })
         })
       } catch (e) {
-        log.error('PuppetWeb', 'uploadMedia() checkUpload exception: %s', e.message)
+        log.error('PuppetElectron', 'uploadMedia() checkUpload exception: %s', e.message)
         throw e
       }
       if (!ret.Signature) {
-        log.error('PuppetWeb', 'uploadMedia(): chackUpload failed to get Signature')
+        log.error('PuppetElectron', 'uploadMedia(): chackUpload failed to get Signature')
         throw new Error('chackUpload failed to get Signature')
       }
       uploadMediaRequest.Signature = ret.Signature
@@ -499,8 +499,8 @@ export class PuppetWeb extends Puppet {
       delete uploadMediaRequest.AESKey
     }
 
-    log.verbose('PuppetWeb', 'uploadMedia() webwx_data_ticket: %s', webwxDataTicket)
-    log.verbose('PuppetWeb', 'uploadMedia() pass_ticket: %s', passTicket)
+    log.verbose('PuppetElectron', 'uploadMedia() webwx_data_ticket: %s', webwxDataTicket)
+    log.verbose('PuppetElectron', 'uploadMedia() pass_ticket: %s', passTicket)
 
     const formData = {
       id,
@@ -544,12 +544,12 @@ export class PuppetWeb extends Puppet {
         }
       })
     } catch (e) {
-      log.error('PuppetWeb', 'uploadMedia() uploadMedia exception: %s', e.message)
+      log.error('PuppetElectron', 'uploadMedia() uploadMedia exception: %s', e.message)
       throw new Error('uploadMedia err: ' + e.message)
     }
     if (!mediaId) {
-      log.error('PuppetWeb', 'uploadMedia(): upload fail')
-      throw new Error('PuppetWeb.uploadMedia(): upload fail')
+      log.error('PuppetElectron', 'uploadMedia(): upload fail')
+      throw new Error('PuppetElectron.uploadMedia(): upload fail')
     }
     return Object.assign(mediaData, { MediaId: mediaId as string })
   }
@@ -564,7 +564,7 @@ export class PuppetWeb extends Puppet {
       destinationId = room.id
     } else {
       if (!to) {
-        throw new Error('PuppetWeb.sendMedia(): message with neither room nor to?')
+        throw new Error('PuppetElectron.sendMedia(): message with neither room nor to?')
       }
       destinationId = to.id
     }
@@ -575,14 +575,14 @@ export class PuppetWeb extends Puppet {
       try {
         mediaData = await this.uploadMedia(message, destinationId)
         message.rawObj = Object.assign(rawObj, mediaData)
-        log.silly('PuppetWeb', 'Upload completed, new rawObj:%s', JSON.stringify(message.rawObj))
+        log.silly('PuppetElectron', 'Upload completed, new rawObj:%s', JSON.stringify(message.rawObj))
       } catch (e) {
-        log.error('PuppetWeb', 'sendMedia() exception: %s', e.message)
+        log.error('PuppetElectron', 'sendMedia() exception: %s', e.message)
         return false
       }
     } else {
       // To support forward file
-      log.silly('PuppetWeb', 'skip upload file, rawObj:%s', JSON.stringify(rawObj))
+      log.silly('PuppetElectron', 'skip upload file, rawObj:%s', JSON.stringify(rawObj))
       mediaData = {
         ToUserName : destinationId,
         MediaId    : rawObj.MediaId,
@@ -599,7 +599,7 @@ export class PuppetWeb extends Puppet {
     // console.log('rawObj.MsgType', message.rawObj && message.rawObj.MsgType)
 
     mediaData.MsgType = Misc.msgType(message.ext())
-    log.silly('PuppetWeb', 'sendMedia() destination: %s, mediaId: %s, MsgType; %s)',
+    log.silly('PuppetElectron', 'sendMedia() destination: %s, mediaId: %s, MsgType; %s)',
       destinationId,
       mediaData.MediaId,
       mediaData.MsgType,
@@ -608,7 +608,7 @@ export class PuppetWeb extends Puppet {
     try {
       ret = await this.bridge.sendMedia(mediaData)
     } catch (e) {
-      log.error('PuppetWeb', 'sendMedia() exception: %s', e.message)
+      log.error('PuppetElectron', 'sendMedia() exception: %s', e.message)
       Raven.captureException(e)
       return false
     }
@@ -621,7 +621,7 @@ export class PuppetWeb extends Puppet {
   // public async forward(baseData: MsgRawObj, patchData: MsgRawObj): Promise<boolean> {
   public async forward(message: MediaMessage, sendTo: Contact | Room): Promise<boolean> {
 
-    log.silly('PuppetWeb', 'forward() to: %s, message: %s)',
+    log.silly('PuppetElectron', 'forward() to: %s, message: %s)',
       sendTo, message.filename(),
       // patchData.ToUserName,
       // patchData.MMActualContent,
@@ -678,7 +678,7 @@ export class PuppetWeb extends Puppet {
     try {
       ret = await this.bridge.forward(baseData, patchData)
     } catch (e) {
-      log.error('PuppetWeb', 'forward() exception: %s', e.message)
+      log.error('PuppetElectron', 'forward() exception: %s', e.message)
       Raven.captureException(e)
       throw e
     }
@@ -695,7 +695,7 @@ export class PuppetWeb extends Puppet {
       destinationId = room.id
     } else {
       if (!to) {
-        throw new Error('PuppetWeb.send(): message with neither room nor to?')
+        throw new Error('PuppetElectron.send(): message with neither room nor to?')
       }
       destinationId = to.id
     }
@@ -707,7 +707,7 @@ export class PuppetWeb extends Puppet {
     } else {
       const content = message.content()
 
-      log.silly('PuppetWeb', 'send() destination: %s, content: %s)',
+      log.silly('PuppetElectron', 'send() destination: %s, content: %s)',
         destinationId,
         content,
       )
@@ -715,7 +715,7 @@ export class PuppetWeb extends Puppet {
       try {
         ret = await this.bridge.send(destinationId, content)
       } catch (e) {
-        log.error('PuppetWeb', 'send() exception: %s', e.message)
+        log.error('PuppetElectron', 'send() exception: %s', e.message)
         Raven.captureException(e)
         throw e
       }
@@ -733,12 +733,12 @@ export class PuppetWeb extends Puppet {
     }
 
     if (!content) {
-      log.warn('PuppetWeb', 'say(%s) can not say nothing', content)
+      log.warn('PuppetElectron', 'say(%s) can not say nothing', content)
       return false
     }
 
     if (!this.user) {
-      log.warn('PuppetWeb', 'say(%s) can not say because no user', content)
+      log.warn('PuppetElectron', 'say(%s) can not say because no user', content)
       this.emit('error', new Error('no this.user for PuppetWeb'))
       return false
     }
@@ -755,7 +755,7 @@ export class PuppetWeb extends Puppet {
    * logout from browser, then server will emit `logout` event
    */
   public async logout(): Promise<void> {
-    log.verbose('PuppetWeb', 'logout()')
+    log.verbose('PuppetElectron', 'logout()')
 
     const data = this.user || this.userId || ''
     this.userId = this.user = null
@@ -764,7 +764,7 @@ export class PuppetWeb extends Puppet {
       await this.bridge.logout()
       this.emit('logout', data)
     } catch (e) {
-      log.error('PuppetWeb', 'logout() exception: %s', e.message)
+      log.error('PuppetElectron', 'logout() exception: %s', e.message)
       Raven.captureException(e)
       throw e
     }
@@ -774,7 +774,7 @@ export class PuppetWeb extends Puppet {
     try {
       return await this.bridge.getContact(id)
     } catch (e) {
-      log.error('PuppetWeb', 'getContact(%d) exception: %s', id, e.message)
+      log.error('PuppetElectron', 'getContact(%d) exception: %s', id, e.message)
       Raven.captureException(e)
       throw e
     }
@@ -784,7 +784,7 @@ export class PuppetWeb extends Puppet {
     try {
       return await this.bridge.ding(data)
     } catch (e) {
-      log.warn('PuppetWeb', 'ding(%s) rejected: %s', data, e.message)
+      log.warn('PuppetElectron', 'ding(%s) rejected: %s', data, e.message)
       Raven.captureException(e)
       throw e
     }
@@ -794,14 +794,14 @@ export class PuppetWeb extends Puppet {
     try {
       const ret = await this.bridge.contactRemark(contact.id, remark)
       if (!ret) {
-        log.warn('PuppetWeb', 'contactRemark(%s, %s) bridge.contactRemark() return false',
+        log.warn('PuppetElectron', 'contactRemark(%s, %s) bridge.contactRemark() return false',
                               contact.id, remark,
         )
       }
       return ret
 
     } catch (e) {
-      log.warn('PuppetWeb', 'contactRemark(%s, %s) rejected: %s', contact.id, remark, e.message)
+      log.warn('PuppetElectron', 'contactRemark(%s, %s) rejected: %s', contact.id, remark, e.message)
       Raven.captureException(e)
       throw e
     }
@@ -812,7 +812,7 @@ export class PuppetWeb extends Puppet {
       const idList = await this.bridge.contactFind(filterFunc)
       return idList.map(id => Contact.load(id))
     } catch (e) {
-      log.warn('PuppetWeb', 'contactFind(%s) rejected: %s', filterFunc, e.message)
+      log.warn('PuppetElectron', 'contactFind(%s) rejected: %s', filterFunc, e.message)
       Raven.captureException(e)
       throw e
     }
@@ -823,7 +823,7 @@ export class PuppetWeb extends Puppet {
       const idList = await this.bridge.roomFind(filterFunc)
       return idList.map(id => Room.load(id))
     } catch (e) {
-      log.warn('PuppetWeb', 'roomFind(%s) rejected: %s', filterFunc, e.message)
+      log.warn('PuppetElectron', 'roomFind(%s) rejected: %s', filterFunc, e.message)
       Raven.captureException(e)
       throw e
     }
@@ -835,7 +835,7 @@ export class PuppetWeb extends Puppet {
     try {
       return await this.bridge.roomDelMember(roomId, contactId)
     } catch (e) {
-      log.warn('PuppetWeb', 'roomDelMember(%s, %d) rejected: %s', roomId, contactId, e.message)
+      log.warn('PuppetElectron', 'roomDelMember(%s, %d) rejected: %s', roomId, contactId, e.message)
       Raven.captureException(e)
       throw e
     }
@@ -847,7 +847,7 @@ export class PuppetWeb extends Puppet {
     try {
       return await this.bridge.roomAddMember(roomId, contactId)
     } catch (e) {
-      log.warn('PuppetWeb', 'roomAddMember(%s) rejected: %s', contact, e.message)
+      log.warn('PuppetElectron', 'roomAddMember(%s) rejected: %s', contact, e.message)
       Raven.captureException(e)
       throw e
     }
@@ -862,7 +862,7 @@ export class PuppetWeb extends Puppet {
     try {
       return await this.bridge.roomModTopic(roomId, topic)
     } catch (e) {
-      log.warn('PuppetWeb', 'roomTopic(%s) rejected: %s', topic, e.message)
+      log.warn('PuppetElectron', 'roomTopic(%s) rejected: %s', topic, e.message)
       Raven.captureException(e)
       throw e
     }
@@ -883,7 +883,7 @@ export class PuppetWeb extends Puppet {
       return  Room.load(roomId)
 
     } catch (e) {
-      log.warn('PuppetWeb', 'roomCreate(%s, %s) rejected: %s', contactIdList.join(','), topic, e.message)
+      log.warn('PuppetElectron', 'roomCreate(%s, %s) rejected: %s', contactIdList.join(','), topic, e.message)
       Raven.captureException(e)
       throw e
     }
@@ -900,7 +900,7 @@ export class PuppetWeb extends Puppet {
     try {
       return await this.bridge.verifyUserRequest(contact.id, hello)
     } catch (e) {
-      log.warn('PuppetWeb', 'bridge.verifyUserRequest(%s, %s) rejected: %s', contact.id, hello, e.message)
+      log.warn('PuppetElectron', 'bridge.verifyUserRequest(%s, %s) rejected: %s', contact.id, hello, e.message)
       Raven.captureException(e)
       throw e
     }
@@ -914,7 +914,7 @@ export class PuppetWeb extends Puppet {
     try {
       return await this.bridge.verifyUserOk(contact.id, ticket)
     } catch (e) {
-      log.warn('PuppetWeb', 'bridge.verifyUserOk(%s, %s) rejected: %s', contact.id, ticket, e.message)
+      log.warn('PuppetElectron', 'bridge.verifyUserOk(%s, %s) rejected: %s', contact.id, ticket, e.message)
       Raven.captureException(e)
       throw e
     }
@@ -925,14 +925,14 @@ export class PuppetWeb extends Puppet {
    * For issue #668
    */
   public async readyStable(): Promise<void> {
-    log.verbose('PuppetWeb', 'readyStable()')
+    log.verbose('PuppetElectron', 'readyStable()')
     let counter = -1
 
     async function stable(done: Function): Promise<void> {
-      log.silly('PuppetWeb', 'readyStable() stable() counter=%d', counter)
+      log.silly('PuppetElectron', 'readyStable() stable() counter=%d', counter)
       const contactList = await Contact.findAll()
       if (counter === contactList.length) {
-        log.verbose('PuppetWeb', 'readyStable() stable() READY counter=%d', counter)
+        log.verbose('PuppetElectron', 'readyStable() stable() READY counter=%d', counter)
         return done()
       }
       counter = contactList.length
@@ -942,7 +942,7 @@ export class PuppetWeb extends Puppet {
 
     return new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
-        log.warn('PuppetWeb', 'readyStable() stable() reject at counter=%d', counter)
+        log.warn('PuppetElectron', 'readyStable() stable() reject at counter=%d', counter)
         return reject(new Error('timeout after 60 seconds'))
       }, 60 * 1000)
       timer.unref()
@@ -965,7 +965,7 @@ export class PuppetWeb extends Puppet {
       }
       return name
     } catch (e) {
-      log.error('PuppetWeb', 'hostname() exception:%s', e)
+      log.error('PuppetElectron', 'hostname() exception:%s', e)
       this.emit('error', e)
       throw e
     }
@@ -982,4 +982,4 @@ export class PuppetWeb extends Puppet {
   }
 }
 
-export default PuppetWeb
+export default PuppetElectron

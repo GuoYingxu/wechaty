@@ -29,7 +29,7 @@ import {
   MediaMessage,
 }                 from './message'
 import Misc       from './misc'
-import PuppetWeb  from './puppet-web'
+import PuppetElectron  from './puppet-Electron'
 import Wechaty    from './wechaty'
 
 export interface ContactObj {
@@ -543,9 +543,9 @@ export class Contact implements Sayable {
     }
 
     try {
-      const hostname = await (config.puppetInstance() as PuppetWeb).hostname()
+      const hostname = await (config.puppetInstance() as PuppetElectron).hostname()
       const avatarUrl = `http://${hostname}${this.obj.avatar}&type=big` // add '&type=big' to get big image
-      const cookies = await (config.puppetInstance() as PuppetWeb).cookies()
+      const cookies = await (config.puppetInstance() as PuppetElectron).cookies()
       log.silly('Contact', 'avatar() url: %s', avatarUrl)
 
       return Misc.urlStream(avatarUrl, cookies)

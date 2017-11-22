@@ -33,7 +33,7 @@ import {
 }                 from '../puppet'
 
 import Firer      from './firer'
-import PuppetWeb  from './puppet-web'
+import PuppetElectron  from './puppet-electron'
 import {
   MsgType,
   MsgRawObj,
@@ -53,16 +53,16 @@ export const Event = {
 
 }
 
-function onDing(this: PuppetWeb, data): void {
-  log.silly('PuppetWebEvent', 'onDing(%s)', data)
+function onDing(this: PuppetElectron, data): void {
+  log.silly('PuppetElectronEvent', 'onDing(%s)', data)
   this.emit('watchdog', { data })
 }
 
-async function onScan(this: PuppetWeb, data: ScanInfo): Promise<void> {
-  log.verbose('PuppetWebEvent', 'onScan({code: %d, url: %s})', data.code, data.url)
+async function onScan(this: PuppetElectron, data: ScanInfo): Promise<void> {
+  log.verbose('PuppetElectronEvent', 'onScan({code: %d, url: %s})', data.code, data.url)
 
   if (this.state.off()) {
-    log.verbose('PuppetWebEvent', 'onScan(%s) state.off()=%s, NOOP',
+    log.verbose('PuppetElectronEvent', 'onScan(%s) state.off()=%s, NOOP',
                                   data, this.state.off())
     return
   }
@@ -75,7 +75,7 @@ async function onScan(this: PuppetWeb, data: ScanInfo): Promise<void> {
   await this.saveCookie()
 
   if (this.user) {
-    log.verbose('PuppetWebEvent', 'onScan() there has user when got a scan event. emit logout and set it to null')
+    log.verbose('PuppetElectronEvent', 'onScan() there has user when got a scan event. emit logout and set it to null')
 
     const bak = this.user || this.userId || ''
     this.user = this.userId = null
@@ -92,21 +92,21 @@ async function onScan(this: PuppetWeb, data: ScanInfo): Promise<void> {
 }
 
 function onLog(data: any): void {
-  log.silly('PuppetWebEvent', 'onLog(%s)', data)
+  log.silly('PuppetElectronEvent', 'onLog(%s)', data)
 }
 
-async function onLogin(this: PuppetWeb, memo: string, ttl = 30): Promise<void> {
-  log.verbose('PuppetWebEvent', 'onLogin(%s, %d)', memo, ttl)
+async function onLogin(this: PuppetElectron, memo: string, ttl = 30): Promise<void> {
+  log.verbose('PuppetElectronEvent', 'onLogin(%s, %d)', memo, ttl)
 
   const TTL_WAIT_MILLISECONDS = 1 * 1000
   if (ttl <= 0) {
-    log.verbose('PuppetWebEvent', 'onLogin(%s) TTL expired')
+    log.verbose('PuppetElectronEvent', 'onLogin(%s) TTL expired')
     this.emit('error', new Error('TTL expired.'))
     return
   }
 
   if (this.state.off()) {
-    log.verbose('PuppetWebEvent', 'onLogin(%s, %d) state.off()=%s, NOOP',
+    log.verbose('PuppetElectronEvent', 'onLogin(%s, %d) state.off()=%s, NOOP',
                                   memo, ttl, this.state.off())
     return
   }
@@ -114,7 +114,7 @@ async function onLogin(this: PuppetWeb, memo: string, ttl = 30): Promise<void> {
   this.scanInfo = null
 
   if (this.userId) {
-    log.warn('PuppetWebEvent', 'onLogin(%s) userId had already set: "%s"', memo, this.userId)
+    log.warn('PuppetElectronEvent', 'onLogin(%s) userId had already set: "%s"', memo, this.userId)
   }
 
   try {
@@ -126,48 +126,48 @@ async function onLogin(this: PuppetWeb, memo: string, ttl = 30): Promise<void> {
     this.userId = await this.bridge.getUserName()
 
     if (!this.userId) {
-      log.verbose('PuppetWebEvent', 'onLogin() browser not fully loaded(ttl=%d), retry later', ttl)
+      log.verbose('PuppetElectronEvent', 'onLogin() browser not fully loaded(ttl=%d), retry later', ttl)
       const html = await this.bridge.innerHTML()
-      log.silly('PuppetWebEvent', 'onLogin() innerHTML: %s', html.substr(0, 500))
+      log.silly('PuppetElectronEvent', 'onLogin() innerHTML: %s', html.substr(0, 500))
       setTimeout(onLogin.bind(this, memo, ttl - 1), TTL_WAIT_MILLISECONDS)
       return
     }
 
-    log.silly('PuppetWebEvent', 'bridge.getUserName: %s', this.userId)
+    log.silly('PuppetElectronEvent', 'bridge.getUserName: %s', this.userId)
     this.user = Contact.load(this.userId)
     await this.user.ready()
-    log.silly('PuppetWebEvent', `onLogin() user ${this.user.name()} logined`)
+    log.silly('PuppetElectronEvent', `onLogin() user ${this.user.name()} logined`)
 
     try {
       if (this.state.on() === true) {
         await this.saveCookie()
       }
     } catch (e) { // fail safe
-      log.verbose('PuppetWebEvent', 'onLogin() this.saveCookie() exception: %s', e.message)
+      log.verbose('PuppetElectronEvent', 'onLogin() this.saveCookie() exception: %s', e.message)
     }
 
     // fix issue #668
     try {
       await this.readyStable()
     } catch (e) { // fail safe
-      log.warn('PuppetWebEvent', 'readyStable() exception: %s', e && e.message || e)
+      log.warn('PuppetElectronEvent', 'readyStable() exception: %s', e && e.message || e)
     }
 
     this.emit('login', this.user)
 
   } catch (e) {
-    log.error('PuppetWebEvent', 'onLogin() exception: %s', e)
+    log.error('PuppetElectronEvent', 'onLogin() exception: %s', e)
     throw e
   }
 
   return
 }
 
-function onLogout(this: PuppetWeb, data) {
-  log.verbose('PuppetWebEvent', 'onLogout(%s)', data)
+function onLogout(this: PuppetElectron, data) {
+  log.verbose('PuppetElectronEvent', 'onLogout(%s)', data)
 
   if (!this.user && !this.userId) {
-    log.warn('PuppetWebEvent', 'onLogout() without this.user or userId initialized')
+    log.warn('PuppetElectronEvent', 'onLogout() without this.user or userId initialized')
   }
 
   const bak = this.user || this.userId || ''
@@ -176,7 +176,7 @@ function onLogout(this: PuppetWeb, data) {
 }
 
 async function onMessage(
-  this: PuppetWeb,
+  this: PuppetElectron,
   obj: MsgRawObj,
 ): Promise<void> {
   let m = new Message(obj)
@@ -216,13 +216,13 @@ async function onMessage(
       case MsgType.VOICE:
       case MsgType.MICROVIDEO:
       case MsgType.APP:
-        log.verbose('PuppetWebEvent', 'onMessage() EMOTICON/IMAGE/VIDEO/VOICE/MICROVIDEO message')
+        log.verbose('PuppetElectronEvent', 'onMessage() EMOTICON/IMAGE/VIDEO/VOICE/MICROVIDEO message')
         m = new MediaMessage(obj)
         break
 
       case MsgType.TEXT:
         if (m.typeSub() === MsgType.LOCATION) {
-          log.verbose('PuppetWebEvent', 'onMessage() (TEXT&LOCATION) message')
+          log.verbose('PuppetElectronEvent', 'onMessage() (TEXT&LOCATION) message')
           m = new MediaMessage(obj)
         }
         break
@@ -243,21 +243,21 @@ async function onMessage(
     this.emit('message', m)
 
   } catch (e) {
-    log.error('PuppetWebEvent', 'onMessage() exception: %s', e.stack)
+    log.error('PuppetElectronEvent', 'onMessage() exception: %s', e.stack)
     throw e
   }
 
   return
 }
 
-async function onUnload(this: PuppetWeb): Promise<void> {
-  log.silly('PuppetWebEvent', 'onUnload()')
+async function onUnload(this: PuppetElectron): Promise<void> {
+  log.silly('PuppetElectronEvent', 'onUnload()')
   /*
   try {
     await this.quit()
     await this.init()
   } catch (e) {
-    log.error('PuppetWebEvent', 'onUnload() exception: %s', e)
+    log.error('PuppetElectronEvent', 'onUnload() exception: %s', e)
     this.emit('error', e)
     throw e
   }

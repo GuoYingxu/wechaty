@@ -43,19 +43,19 @@ import {
 /**
  * @alias FriendRequest
  */
-export class PuppetWebFriendRequest extends FriendRequest {
+export class PuppetElectronFriendRequest extends FriendRequest {
 
   public info: RecommendInfo
 
   private ticket: string
 
   constructor() {
-    log.verbose('PuppetWebFriendRequest', 'constructor()')
+    log.verbose('PuppetElectronFriendRequest', 'constructor()')
     super()
   }
 
   public receive(info: RecommendInfo): void {
-    log.verbose('PuppetWebFriendRequest', 'receive(%s)', info)
+    log.verbose('PuppetElectronFriendRequest', 'receive(%s)', info)
 
     if (!info || !info.UserName) {
       throw new Error('not valid RecommendInfo: ' + info)
@@ -64,7 +64,7 @@ export class PuppetWebFriendRequest extends FriendRequest {
 
     const contact   = Contact.load(info.UserName)
     if (!contact) {
-      log.warn('PuppetWebFriendRequest', 'receive() no contact found for "%s"', info.UserName)
+      log.warn('PuppetElectronFriendRequest', 'receive() no contact found for "%s"', info.UserName)
       throw new Error('no contact')
     }
     this.contact    = contact
@@ -82,7 +82,7 @@ export class PuppetWebFriendRequest extends FriendRequest {
   }
 
   public confirm(contact: Contact): void {
-    log.verbose('PuppetWebFriendRequest', 'confirm(%s)', contact)
+    log.verbose('PuppetElectronFriendRequest', 'confirm(%s)', contact)
 
     if (!contact) {
       throw new Error('contact not found')
@@ -102,7 +102,7 @@ export class PuppetWebFriendRequest extends FriendRequest {
    * request.send(from, 'hello~')
    */
   public async send(contact: Contact, hello = 'Hi'): Promise<boolean> {
-    log.verbose('PuppetWebFriendRequest', 'send(%s)', contact)
+    log.verbose('PuppetElectronFriendRequest', 'send(%s)', contact)
 
     if (!contact) {
       throw new Error('contact not found')
@@ -143,18 +143,18 @@ export class PuppetWebFriendRequest extends FriendRequest {
     // refresh to wait contact ready
 
     await retryPromise({ max: max, backoff: backoff }, async (attempt: number) => {
-      log.silly('PuppetWebFriendRequest', 'accept() retryPromise() attempt %d with timeout %d', attempt, timeout)
+      log.silly('PuppetElectronFriendRequest', 'accept() retryPromise() attempt %d with timeout %d', attempt, timeout)
 
       await this.contact.ready()
 
       if (this.contact.isReady()) {
-        log.verbose('PuppetWebFriendRequest', 'accept() with contact %s ready()', this.contact.name())
+        log.verbose('PuppetElectronFriendRequest', 'accept() with contact %s ready()', this.contact.name())
         return
       }
       throw new Error('FriendRequest.accept() content.ready() not ready')
 
     }).catch( e => {
-      log.warn('PuppetWebFriendRequest', 'accept() rejected for contact %s because %s', this.contact, e && e.message || e)
+      log.warn('PuppetElectronFriendRequest', 'accept() rejected for contact %s because %s', this.contact, e && e.message || e)
     })
 
     return ret
@@ -162,4 +162,4 @@ export class PuppetWebFriendRequest extends FriendRequest {
 
 }
 
-export default PuppetWebFriendRequest
+export default PuppetElectronFriendRequest

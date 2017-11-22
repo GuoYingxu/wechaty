@@ -34,15 +34,15 @@ import {
 import Contact    from './contact'
 import Room       from './room'
 import Misc       from './misc'
-import PuppetWeb  from './puppet-web/puppet-web'
-import Bridge     from './puppet-web/bridge'
+import PuppetElectron  from './puppet-electron/puppet-electron'
+import Bridge     from './puppet-electron/bridge'
 
 import {
   AppMsgType,
   MsgObj,
   MsgRawObj,
   MsgType,
-}                 from './puppet-web/schema'
+}                 from './puppet-electron/schema'
 
 export type TypeName =  'attachment'
                       | 'audio'
@@ -690,7 +690,7 @@ export class MediaMessage extends Message {
     }
 
     // FIXME: decoupling needed
-    this.bridge = (config.puppetInstance() as PuppetWeb)
+    this.bridge = (config.puppetInstance() as PuppetElectron)
                     .bridge
   }
 
@@ -886,7 +886,7 @@ export class MediaMessage extends Message {
     try {
       await this.ready()
       // FIXME: decoupling needed
-      const cookies = await (config.puppetInstance() as PuppetWeb).cookies()
+      const cookies = await (config.puppetInstance() as PuppetElectron).cookies()
       if (!this.obj.url) {
         throw new Error('no url')
       }

@@ -19,7 +19,7 @@
 import * as WebSocket from 'ws'
 import StateSwitch    from 'state-switch'
 
-import PuppetWeb  from './puppet-web/'
+import PuppetElectron  from './puppet-electron/'
 
 import {
   config,
@@ -291,7 +291,17 @@ export class Io {
         }
 
         const puppet = this.options.wechaty.puppet
-        if (puppet instanceof PuppetWeb) {
+        // if (puppet instanceof PuppetWeb) {
+        //   const scanInfo = puppet.scanInfo
+        //   if (scanInfo) {
+        //     const scanEvent: IoEvent = {
+        //       name: 'scan',
+        //       payload: scanInfo,
+        //     }
+        //     this.send(scanEvent)
+        //   }
+        // }
+        if (puppet instanceof PuppetElectron) {
           const scanInfo = puppet.scanInfo
           if (scanInfo) {
             const scanEvent: IoEvent = {

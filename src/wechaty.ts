@@ -43,7 +43,7 @@ import {
 }                     from './message'
 import Profile        from './profile'
 import Puppet         from './puppet'
-import PuppetWeb      from './puppet-web/'
+import PuppetElectron      from './puppet-Electron/'
 import Room           from './room'
 import Misc           from './misc'
 
@@ -404,8 +404,8 @@ export class Wechaty extends EventEmitter implements Sayable {
     let puppet: Puppet
 
     switch (this.options.puppet) {
-      case 'web':
-        puppet = new PuppetWeb({
+      case 'electron':
+        puppet = new PuppetElectron({
           profile:  this.profile,
         })
         break

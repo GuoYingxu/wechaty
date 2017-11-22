@@ -22,11 +22,11 @@ import * as test  from 'blue-tape'
 // import * as sinon from 'sinon'
 
 import Profile    from './profile'
-import PuppetWeb  from './puppet-web'
+import PuppetElectron  from './puppet-electron'
 
 test('Puppet smoke testing', async t => {
   const profile = new Profile(Math.random().toString(36).substr(2, 5))
-  const p = new PuppetWeb({ profile })
+  const p = new PuppetElectron({ profile })
 
   t.ok(p.state.off(), 'should be OFF state after instanciate')
   p.state.on('pending')

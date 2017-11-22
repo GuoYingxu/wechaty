@@ -19,11 +19,11 @@
 export { Bridge }                           from './bridge'
 export { Event }                            from './event'
 export {
-  PuppetWebFriendRequest as FriendRequest,
+  PuppetElectronFriendRequest as FriendRequest,
 }                                           from './friend-request'
-import { PuppetWeb }                        from './puppet-web'
+import { PuppetElectron }                        from './puppet-electron'
 
-export default PuppetWeb
+export default PuppetElectron
 export {
-  PuppetWeb,
+  PuppetElectron,
 }
