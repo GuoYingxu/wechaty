@@ -36,9 +36,9 @@ import {
   Profile,
 }                 from '../../'
 
-import PuppetWeb  from '../../src/puppet-web/puppet-web'
-import Bridge     from '../../src/puppet-web/bridge'
-import Event      from '../../src/puppet-web/event'
+import PuppetElectron  from '../../src/puppet-electron/puppet-electron'
+import Bridge     from '../../src/puppet-electron/bridge'
+import Event      from '../../src/puppet-electron/event'
 
 test('login/logout events', sinonTest(async function (t: test.Test) {
 
@@ -50,15 +50,15 @@ test('login/logout events', sinonTest(async function (t: test.Test) {
   sinon.stub(Event, 'onScan') // block the scan event to prevent reset logined user
 
   sinon.stub(Bridge.prototype,    'getUserName').resolves('mockedUserName')
-  sinon.stub(PuppetWeb.prototype, 'getContact') .resolves({
+  sinon.stub(PuppetElectron.prototype, 'getContact') .resolves({
     NickName: 'mockedNickName',
     UserName: 'mockedUserName',
   })
 
   try {
     const profile = new Profile()
-    const pw      = new PuppetWeb({ profile })
-    t.ok(pw, 'should instantiated a PuppetWeb')
+    const pw      = new PuppetElectron({ profile })
+    t.ok(pw, 'should instantiated a PuppetElectron')
 
     config.puppetInstance(pw)
 
@@ -68,7 +68,7 @@ test('login/logout events', sinonTest(async function (t: test.Test) {
 
     const EXPECTED_CHIPER = 'loginFired'
     const loginPromise = new Promise(r => pw.once('login', _ => r(EXPECTED_CHIPER)))
-    pw.bridge.emit('login', 'TestPuppetWeb')
+    pw.bridge.emit('login', 'TestPuppetElectron')
     t.is(await loginPromise, EXPECTED_CHIPER, 'should fired login event')
     t.is(pw.logonoff(), true  , 'should be logined')
 

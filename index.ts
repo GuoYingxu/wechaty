@@ -8,11 +8,11 @@ export { Contact }    from './src/contact'
 
 // ISSUE #70 import { FriendRequest }  from './src/friend-request'
 export {
-  PuppetWebFriendRequest as FriendRequest,
-}                     from './src/puppet-web/friend-request'
+  PuppetElectronFriendRequest as FriendRequest,
+}                     from './src/puppet-electron/friend-request'
 export {
   MsgType,
-}                     from './src/puppet-web/schema'
+}                     from './src/puppet-electron/schema'
 
 export { IoClient }   from './src/io-client'
 export {
@@ -21,7 +21,7 @@ export {
 }                     from './src/message'
 export { Profile }    from './src/profile'
 export { Puppet }     from './src/puppet'
-export { PuppetWeb }  from './src/puppet-web/'
+export { PuppetElectron }  from './src/puppet-electron/'
 export { Room }       from './src/room'
 export { Misc }       from './src/misc'
 

@@ -25,13 +25,13 @@ import * as test  from 'blue-tape'
 import config     from '../src/config'
 import Contact    from '../src/contact'
 import Profile    from '../src/profile'
-import PuppetWeb  from '../src/puppet-web'
+import PuppetElectron  from '../src/puppet-electron'
 import Room       from '../src/room'
 
-config.puppetInstance(new PuppetWeb({
+config.puppetInstance(new PuppetElectron({
   profile: new Profile(),
 }))
-// Room.attach(new PuppetWeb())
+// Room.attach(new PuppetElectron())
 
 // test('Room smoke testing', async t => {
 

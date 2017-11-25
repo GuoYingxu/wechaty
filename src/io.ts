@@ -291,7 +291,7 @@ export class Io {
         }
 
         const puppet = this.options.wechaty.puppet
-        // if (puppet instanceof PuppetWeb) {
+        // if (puppet instanceof PuppetElectron) {
         //   const scanInfo = puppet.scanInfo
         //   if (scanInfo) {
         //     const scanEvent: IoEvent = {

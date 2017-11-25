@@ -1,6 +1,6 @@
 import { BrowserWindow, WebContents, Cookie, ipcMain } from 'electron';
 import { setTimeout } from 'timers';
-import  * as _  from 'lodash'
+
 export class Browser {
   public options: any
   // tslint:disable-next-line:no-empty
@@ -46,11 +46,6 @@ export class Page {
   public win: BrowserWindow
   public web: WebContents
   constructor(opt) {
-    opt = opt || {}
-
-    opt = _.assign({}, {webPreferences: {
-      allowRunningInsecureContent: true,
-    }})
     this.win = new BrowserWindow(opt)
     this.web = this.win.webContents;
     this.web.openDevTools();
@@ -96,11 +91,6 @@ export class Page {
         callback(event)
      })
     }
-  }
-  public bindEvent(eventName: string, callback: Function) {
-    ipcMain.on( eventName, (event, args) => {
-      callback(eventName, args)
-    })
   }
 
   public async goto(url: string): Promise<any> {

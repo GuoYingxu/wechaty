@@ -37,20 +37,12 @@
 (function() {
 
   require('electron').ipcRenderer.on("bridge", (event, message) => {
-    if (message.args) {
-      if (message.args instanceof Array) {
-        require('electron').ipcRenderer.send(`bridge-${message.method}`, WechatyBro[message.method](...message.args))
-      } else {
-        require('electron').ipcRenderer.send(`bridge-${message.method}`, WechatyBro[message.method](message.args))
-      }
-    } else {
-
-      require('electron').ipcRenderer.send(`bridge-${message.method}`, WechatyBro[message.method]())
-    }
+    console.log(event, message)
+    require('electron').ipcRenderer.send(`bridge-${message.method}`, WechatyBro[message.method](...message.args))
   })
 
   function emit(event, args) {
-    require('electron').ipcRenderer.send(event, args)
+    require('electron').ipcRenderer.send('log', args)
   }
 
   function test(...args) {
@@ -152,27 +144,27 @@
     var loginScope = angular.element('[ng-controller="loginController"]').scope()
 
     /*
-            // method 1
-            appFactory.syncOrig = appFactory.sync
-            appFactory.syncCheckOrig = appFactory.syncCheck
-            appFactory.sync = function() { WechatyBro.log('appFactory.sync() !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'); return appFactory.syncOrig(arguments) }
-            appFactory.syncCheck = function() { WechatyBro.log('appFactory.syncCheck() !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'); return appFactory.syncCheckOrig(arguments) }
-    
-            // method 2
-            $.ajaxOrig = $.ajax
-            $.ajax = function() { WechatyBro.log('$.ajax() !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'); return $.ajaxOrig(arguments) }
-    
-            $.ajax({
-              url: "https://wx.qq.com/zh_CN/htmledition/v2/images/webwxgeticon.jpg"
-              , type: "GET"
-            }).done(function (response) {
-              alert("success");
-            })
-    
-            // method 3 - mmHttp
-            mmHttp.getOrig = mmHttp.get
-            mmHttp.get = function() { WechatyBro.log('mmHttp.get() !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'); return mmHttp.getOrig(arguments) }
-        */
+        // method 1
+        appFactory.syncOrig = appFactory.sync
+        appFactory.syncCheckOrig = appFactory.syncCheck
+        appFactory.sync = function() { WechatyBro.log('appFactory.sync() !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'); return appFactory.syncOrig(arguments) }
+        appFactory.syncCheck = function() { WechatyBro.log('appFactory.syncCheck() !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'); return appFactory.syncCheckOrig(arguments) }
+
+        // method 2
+        $.ajaxOrig = $.ajax
+        $.ajax = function() { WechatyBro.log('$.ajax() !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'); return $.ajaxOrig(arguments) }
+
+        $.ajax({
+          url: "https://wx.qq.com/zh_CN/htmledition/v2/images/webwxgeticon.jpg"
+          , type: "GET"
+        }).done(function (response) {
+          alert("success");
+        })
+
+        // method 3 - mmHttp
+        mmHttp.getOrig = mmHttp.get
+        mmHttp.get = function() { WechatyBro.log('mmHttp.get() !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'); return mmHttp.getOrig(arguments) }
+    */
 
     /**
      * generate $scope with a contoller (as it is not assigned in html staticly)
@@ -238,7 +230,6 @@
         ' to ' +
         code
       )
-      console.log('----scan emit')
       WechatyBro.emit('scan', {
         code: code,
         url: url,
@@ -270,7 +261,6 @@
   function login(data) {
     log('login(' + data + ')')
     loginState(true)
-    console.log('-----login')
     WechatyBro.emit('login', data)
   }
 

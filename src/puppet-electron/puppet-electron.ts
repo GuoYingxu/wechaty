@@ -77,7 +77,7 @@ export class PuppetElectron extends Puppet {
     this.fileId = 0
 
     const PUPPET_TIMEOUT  = 1 * 60 * 1000  // 1 minute
-    this.puppetWatchdog   = new Watchdog<PuppetFoodType>(PUPPET_TIMEOUT, 'PuppetWeb')
+    this.puppetWatchdog   = new Watchdog<PuppetFoodType>(PUPPET_TIMEOUT, 'PuppetElectron')
 
     const SCAN_TIMEOUT  = 2 * 60 * 1000 // 2 minutes
     this.scanWatchdog   = new Watchdog<ScanFoodType>(SCAN_TIMEOUT, 'Scan')
@@ -118,11 +118,11 @@ export class PuppetElectron extends Puppet {
         await this.saveCookie()
       })
 
-      log.verbose('PuppetWeb', 'init() done')
+      log.verbose('PuppetElectron', 'init() done')
       return
 
     } catch (e) {
-      log.error('PuppetWeb', 'init() exception: %s', e)
+      log.error('PuppetElectron', 'init() exception: %s', e)
 
       this.state.off(true)
       this.emit('error', e)
@@ -144,13 +144,13 @@ export class PuppetElectron extends Puppet {
 
     puppet.on('watchdog', food => dog.feed(food))
     dog.on('feed', food => {
-      log.silly('PuppetWeb', 'initWatchdogForPuppet() dog.on(feed, food={type=%s, data=%s})', food.type, food.data)
+      log.silly('PuppetElectron', 'initWatchdogForPuppet() dog.on(feed, food={type=%s, data=%s})', food.type, food.data)
       // feed the dog, heartbeat the puppet.
       puppet.emit('heartbeat', food.data)
     })
 
     dog.on('reset', async (food, timeout) => {
-      log.warn('PuppetWeb', 'initWatchdogForPuppet() dog.on(reset) last food:%s, timeout:%s',
+      log.warn('PuppetElectron', 'initWatchdogForPuppet() dog.on(reset) last food:%s, timeout:%s',
                             food.data, timeout)
       try {
         await this.quit()
@@ -169,7 +169,7 @@ export class PuppetElectron extends Puppet {
    * so we need to refresh the page after a while
    */
   public initWatchdogForScan(): void {
-    log.verbose('PuppetWeb', 'initWatchdogForScan()')
+    log.verbose('PuppetElectron', 'initWatchdogForScan()')
 
     const puppet = this
     const dog    = this.scanWatchdog
@@ -198,19 +198,19 @@ export class PuppetElectron extends Puppet {
     }))
 
     dog.on('reset', async (food, time) => {
-      log.warn('PuppetWeb', 'initScanWatchdog() on(reset) lastFood: %s, time: %s',
+      log.warn('PuppetElectron', 'initScanWatchdog() on(reset) lastFood: %s, time: %s',
                             food.data, time)
       try {
         await this.bridge.reload()
       } catch (e) {
-        log.error('PuppetWeb', 'initScanWatchdog() on(reset) exception: %s', e)
+        log.error('PuppetElectron', 'initScanWatchdog() on(reset) exception: %s', e)
         try {
-          log.error('PuppetWeb', 'initScanWatchdog() on(reset) try to recover by bridge.{quit,init}()', e)
+          log.error('PuppetElectron', 'initScanWatchdog() on(reset) try to recover by bridge.{quit,init}()', e)
           await this.bridge.quit()
           await this.bridge.init()
-          log.error('PuppetWeb', 'initScanWatchdog() on(reset) recover successful')
+          log.error('PuppetElectron', 'initScanWatchdog() on(reset) recover successful')
         } catch (e) {
-          log.error('PuppetWeb', 'initScanWatchdog() on(reset) recover FAIL: %s', e)
+          log.error('PuppetElectron', 'initScanWatchdog() on(reset) recover FAIL: %s', e)
           this.emit('error', e)
         }
       }
@@ -218,20 +218,20 @@ export class PuppetElectron extends Puppet {
   }
 
   public async quit(): Promise<void> {
-    log.verbose('PuppetWeb', 'quit()')
+    log.verbose('PuppetElectron', 'quit()')
 
     const off = this.state.off()
     if (off === 'pending') {
-        const e = new Error('quit() is called on a PENDING OFF PuppetWeb')
-        log.warn('PuppetWeb', e.message)
+        const e = new Error('quit() is called on a PENDING OFF PuppetElectron')
+        log.warn('PuppetElectron', e.message)
         this.emit('error', e)
         return
     } else if (off === true) {
-        log.warn('PuppetWeb', 'quit() is called on a OFF puppet. return directly.')
+        log.warn('PuppetElectron', 'quit() is called on a OFF puppet. return directly.')
         return
     }
 
-    log.verbose('PuppetWeb', 'quit() make watchdog sleep before do quit')
+    log.verbose('PuppetElectron', 'quit() make watchdog sleep before do quit')
     this.puppetWatchdog.sleep()
 
     this.state.off('pending')
@@ -241,7 +241,7 @@ export class PuppetElectron extends Puppet {
       // register the removeListeners micro task at then end of the task queue
       setImmediate(() => this.bridge.removeAllListeners())
     } catch (e) {
-      log.error('PuppetWeb', 'quit() exception: %s', e.message)
+      log.error('PuppetElectron', 'quit() exception: %s', e.message)
       Raven.captureException(e)
       throw e
     } finally {
@@ -250,7 +250,7 @@ export class PuppetElectron extends Puppet {
   }
 
   public async initBridge(profile: Profile): Promise<Bridge> {
-    log.verbose('PuppetWeb', 'initBridge()')
+    log.verbose('PuppetElectron', 'initBridge()')
 
     if (this.state.off()) {
       const e = new Error('initBridge() found targetState != live, no init anymore')
@@ -739,7 +739,7 @@ export class PuppetElectron extends Puppet {
 
     if (!this.user) {
       log.warn('PuppetElectron', 'say(%s) can not say because no user', content)
-      this.emit('error', new Error('no this.user for PuppetWeb'))
+      this.emit('error', new Error('no this.user for PuppetElectron'))
       return false
     }
 
@@ -878,7 +878,7 @@ export class PuppetElectron extends Puppet {
     try {
       const roomId = await this.bridge.roomCreate(contactIdList, topic)
       if (!roomId) {
-        throw new Error('PuppetWeb.roomCreate() roomId "' + roomId + '" not found')
+        throw new Error('PuppetElectron.roomCreate() roomId "' + roomId + '" not found')
       }
       return  Room.load(roomId)
 

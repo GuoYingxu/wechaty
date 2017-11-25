@@ -1,0 +1,17 @@
+<html>
+
+<head>
+  <title>test-electron-wechaty</title>
+</head>
+
+<body>
+  An example for Electron electron-wechaty
+  <input id="startWechaty" type="button" value="启动微信">
+  <script>
+    document.getElementById("startWechaty").addEventListener('click', () => {
+      require('electron').ipcRenderer.send('startWechaty')
+    })
+  </script>
+</body>
+
+</html>

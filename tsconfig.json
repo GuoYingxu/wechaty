@@ -1,38 +1,32 @@
 {
   "compilerOptions": {
-    "target": "es6"
-    , "module": "commonjs"
-    , "outDir": "dist"
-    , "declaration": true
-    , "sourceMap": true
-    , "noLib": false
+    "target": "es6",
+    "module": "commonjs",
+    "outDir": "dist",
+    "declaration": true,
+    "sourceMap": true,
+    "noLib": false
 
-    , "noEmitOnError": true
-    , "noUnusedLocals": true
-    , "noImplicitReturns": true
-    , "noFallthroughCasesInSwitch": true
-    , "strictNullChecks": true
+    ,
+    "noEmitOnError": true,
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "strictNullChecks": true
 
-    , "noImplicitAny": false
-    , "noUnusedParameters": false
-    , "noImplicitThis": false
-    , "traceResolution": false
-    , "lib": [
-        "es2016"
-      , "dom"
+    ,
+    "noImplicitAny": false,
+    "noUnusedParameters": false,
+    "noImplicitThis": false,
+    "traceResolution": false,
+    "lib": [
+      "es2016", "dom"
     ]
-  }
-  , "exclude": [
-      "node_modules/"
-    , "dist/"
-  ]
-  , "include": [
-       "bin/*.ts"
-     , "script/**/*.ts"
-     , "example/**/*.ts"
-     , "src/**/*.ts"
-     , "test/**/*.spec.ts"
-     , "bot/**/*.ts"
-     , "app/**/*.ts"
+  },
+  "exclude": [
+    "node_modules/", "dist/"
+  ],
+  "include": [
+    "bin/*.ts", "script/**/*.ts", "src/**/*.ts", "test/**/*.spec.ts", "bot/**/*.ts", "app/**/*.ts"
   ]
 }

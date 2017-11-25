@@ -26,11 +26,11 @@ import Profile  from '../../src/profile'
 
 import {
   // Event,
-  PuppetWeb,
-} from '../../src/puppet-web/'
+  PuppetElectron,
+} from '../../src/puppet-electron/'
 
 test('Puppet Web Event smoke testing', async t => {
-  const pw = new PuppetWeb({
+  const pw = new PuppetElectron({
     profile: new Profile(),
   })
 
