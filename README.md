@@ -1,4 +1,23 @@
+#wechaty-electron
+
+## quick start
+
+  ```
+    git checkout wechaty-electron
+    npm install
+    npm run dist
+    npm start
+  ```
+
+  cookie 问题未来得及处理，登录前保证 web端未登录。 目前仅在mac下测试通过
+
+
+
+
+
+
 [![Wechaty](https://chatie.io/wechaty/images/wechaty-logo-en.png)](https://github.com/chatie/wechaty)
+
 
 WECHATY
 -------
