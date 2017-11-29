@@ -13,7 +13,9 @@
 
 
 
-
+## 问题列表
+  1. cookie 问题，读取cookie 失败
+  2. 重复登录问题，多次登录会导致重复inject
 
 
 [![Wechaty](https://chatie.io/wechaty/images/wechaty-logo-en.png)](https://github.com/chatie/wechaty)

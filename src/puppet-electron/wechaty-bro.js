@@ -60,6 +60,7 @@
   }
 
   function init() {
+    console.log('init')
     if (!angularIsReady()) {
       retObj.code = 503 // 503 SERVICE UNAVAILABLE https://httpstatuses.com/503
       retObj.message = 'init() without a ready angular env'

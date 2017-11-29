@@ -47,7 +47,7 @@ electron_1.app.on('ready', function () {
 });
 function test() {
     return __awaiter(this, void 0, void 0, function () {
-        var browser, page, ret, WECHATY_BRO_JS_FILE, sourceCode, retObj, res, _a, _b;
+        var browser, page, list, ret, WECHATY_BRO_JS_FILE, sourceCode, retObj, res, _a, _b, text, obj;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0: return [4 /*yield*/, electron_driver_1.launch({ title: 'test' })];
@@ -59,8 +59,12 @@ function test() {
                     return [4 /*yield*/, page.goto('http://wx.qq.com')];
                 case 3:
                     _c.sent();
-                    return [4 /*yield*/, page.waitForFunction("typeof window.angular !== 'undefined'")];
+                    return [4 /*yield*/, page.cookies({ url: 'https://wx.qq.com' })];
                 case 4:
+                    list = _c.sent();
+                    console.log(list);
+                    return [4 /*yield*/, page.waitForFunction("typeof window.angular !== 'undefined'")];
+                case 5:
                     ret = _c.sent();
                     console.log(ret);
                     // const cookieList: Cookie[] = await page.cookies({})
@@ -70,17 +74,21 @@ function test() {
                     sourceCode = fs.readFileSync(WECHATY_BRO_JS_FILE)
                         .toString();
                     return [4 /*yield*/, page.evaluate(sourceCode)];
-                case 5:
+                case 6:
                     retObj = _c.sent();
                     console.log(retObj);
                     return [4 /*yield*/, page.send('test', 'arg1', 'arg2')];
-                case 6:
+                case 7:
                     res = _c.sent();
                     console.log(res);
                     _b = (_a = console).log;
                     return [4 /*yield*/, page.send('ding', 'abcdd')];
-                case 7:
+                case 8:
                     _b.apply(_a, [_c.sent()]);
+                    text = fs.readFileSync('./demo.wechaty.json').toString();
+                    obj = JSON.parse(text);
+                    console.log(obj);
+                    page.setCookie.apply(page, obj['cookies']);
                     return [2 /*return*/];
             }
         });

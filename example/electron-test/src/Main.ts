@@ -1,4 +1,5 @@
 import { app , BrowserWindow, Cookie} from 'electron'
+ 
 import {
   Page,
   Browser,
@@ -19,7 +20,9 @@ async function test() {
   const browser: Browser = await launch({title: 'test'})
   const page: Page = await browser.newPage();
   await page.goto('http://wx.qq.com')
-
+  const list = await page.cookies({url: 'https://wx.qq.com'});
+  console.log(list)
+  
   const  ret = await page.waitForFunction(`typeof window.angular !== 'undefined'`)
   console.log(ret)
   // const cookieList: Cookie[] = await page.cookies({})
@@ -39,6 +42,11 @@ async function test() {
   const res = await page.send('test', 'arg1', 'arg2')
   console.log(res)
   console.log(await page.send('ding', 'abcdd'))
+  const text = fs.readFileSync('./demo.wechaty.json').toString()
+  const obj = JSON.parse(text)
+  console.log(obj)
+  page.setCookie(...obj['cookies']);
+  // win.webContents.session.cookies.set([0], null)
 }
 app.on('window-all-closed', () => {
   // process.platform !=='darwin' && app.quit(

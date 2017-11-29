@@ -196,25 +196,31 @@ export class Bridge extends EventEmitter {
     // set this in time because the following callbacks
     // might be called before initPage() return.
     const page = this.page =  await browser.newPage()
-
+    console.log('===newPage')
     page.on('error',  e => this.emit('error', e))
 
     // page.on('dialog', this.onDialog.bind(this))
 
     const cookieList = this.options.profile.get('cookies') as Cookie[]
-    const url        = this.entryUrl(cookieList)
 
+    console.log('get', cookieList)
+    const url        = this.entryUrl(cookieList)
+    console.log(url)
     log.verbose('PuppetElectronBridge', 'initPage() before page.goto(url)')
     await page.goto(url) // Does this related to(?) the CI Error: exception: Navigation Timeout Exceeded: 30000ms exceeded
     log.verbose('PuppetElectronBridge', 'initPage() after page.goto(url)')
 
     if (cookieList && cookieList.length) {
+      console.log(cookieList)
       await page.setCookie(...cookieList)
       log.silly('PuppetElectronBridge', 'initPage() page.setCookie() %s cookies set back', cookieList.length)
     }
 
-    page.on('load', () => this.emit('load', page))
-    await page.reload() // reload page to make effect of the new cookie.
+    page.on('load', () => {
+      this.emit('load', page)
+      console.log('emit loaded')
+    })
+    // await page.reload() // reload page to make effect of the new cookie.
 
     return page
   }

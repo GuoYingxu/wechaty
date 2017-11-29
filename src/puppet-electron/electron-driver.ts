@@ -106,17 +106,32 @@ export class Page {
   public async goto(url: string): Promise<any> {
     return new Promise((resolve, reject) => {
       this.web.on('did-fail-load', (event, errorCode, errorMessage) => {
+        console.log('fail')
         reject(errorMessage)
       })
       this.web.on('did-finish-load', (event) => {
+        console.log('lodapage')
         resolve()
       })
-      this.web.loadURL(url)
+      try {
+
+        this.web.loadURL(url)
+      } catch (e) {
+        console.log(e)
+      }
     })
   }
 
   public async setCookie(...args: Cookie[]): Promise<any> {
     return new Promise((resolve, reject) => {
+      args.forEach((value) => {
+        // console.log(value)
+        this.web.session.cookies.set( _.assign({url: 'http://wx.qq.com' }, value), (err) => {
+          console.log(value, err)
+
+          reject()
+        })
+      })
       return resolve()
     })
   }

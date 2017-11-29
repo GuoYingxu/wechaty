@@ -37,6 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var electron_1 = require("electron");
 var timers_1 = require("timers");
+var _ = require("lodash");
 var Browser = (function () {
     // tslint:disable-next-line:no-empty
     function Browser(options) {
@@ -109,6 +110,10 @@ function launch(options) {
 exports.launch = launch;
 var Page = (function () {
     function Page(opt) {
+        opt = opt || {};
+        opt = _.assign({}, { webPreferences: {
+                allowRunningInsecureContent: true
+            } });
         this.win = new electron_1.BrowserWindow(opt);
         this.web = this.win.webContents;
         this.web.openDevTools();
@@ -155,13 +160,20 @@ var Page = (function () {
      * @param callback
      */
     Page.prototype.on = function (eventName, callback) {
-        this.web.addListener('did-finish-load', function (event) {
-            callback();
-        });
+        if (eventName === 'load') {
+            this.web.addListener('did-finish-load', function (event) {
+                callback();
+            });
+        }
+        if (eventName === 'error') {
+            this.web.addListener('crashed', function (event, killed) {
+                callback(event);
+            });
+        }
     };
-    Page.prototype.on = function (eventName, callback) {
-        this.web.addListener('crashed', function (event, killed) {
-            callback(event);
+    Page.prototype.bindEvent = function (eventName, callback) {
+        electron_1.ipcMain.on(eventName, function (event, args) {
+            callback(eventName, args);
         });
     };
     Page.prototype.goto = function (url) {
@@ -173,7 +185,6 @@ var Page = (function () {
                             reject(errorMessage);
                         });
                         _this.web.on('did-finish-load', function (event) {
-                            console.log('----loadComplete');
                             resolve();
                         });
                         _this.web.loadURL(url);
@@ -187,8 +198,14 @@ var Page = (function () {
             args[_i] = arguments[_i];
         }
         return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
             return __generator(this, function (_a) {
                 return [2 /*return*/, new Promise(function (resolve, reject) {
+                        args.forEach(function (value) {
+                            _this.web.session.cookies.set(_.assign({ url: 'http://wx.qq.com' }, value), function (err) {
+                                reject();
+                            });
+                        });
                         return resolve();
                     })];
             });
@@ -216,10 +233,11 @@ var Page = (function () {
                 return [2 /*return*/, new Promise(function (resolve, reject) {
                         electron_1.ipcMain.once("bridge-" + event, function (evt, arg) {
                             resolve(arg);
-                        }, _this.web.send('bridge', {
+                        });
+                        _this.web.send('bridge', {
                             method: event,
                             args: args.length > 0 ? args : null
-                        }));
+                        });
                     })];
             });
         });
