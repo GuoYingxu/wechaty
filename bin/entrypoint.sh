@@ -6,8 +6,8 @@
 #
 set -e
 
-HOME=/bot
-PATH=$PATH:/wechaty/bin:/wechaty/node_modules/.bin
+export HOME=/bot
+export PATH=$PATH:/wechaty/bin:/wechaty/node_modules/.bin
 
 function wechaty::banner() {
   echo
@@ -18,7 +18,12 @@ function wechaty::banner() {
 
 function wechaty::errorBotNotFound() {
   local file=$1
-  echo "ERROR: can not found bot file: $file"
+  echo "Container ERROR: can not found bot file: $HOME/$file"
+
+  echo "Container PWD: $(pwd)"
+  echo "Container HOME: $HOME"
+  echo "Container LS $HOME: $(ls -l $HOME)"
+
   figlet " Troubleshooting "
   cat <<'TROUBLESHOOTING'
 
@@ -33,14 +38,25 @@ function wechaty::errorBotNotFound() {
 
       this will let the container visit your current directory.
 
+    2. Are you sure your .js/.ts files aren't .js.txt/.ts.txt?
+
+      this could be a problem on new Windows installs (file
+      extensions hidden by default).
+
     if you still have issue, please have a look at
-      https://github.com/chatie/wechaty/issues/66
+      https://github.com/wechaty/wechaty/issues/66
       and do a search in issues, that might be help.
 
 TROUBLESHOOTING
 }
 
-function wechaty::errorCtrlC() {
+function wechaty::printEnv () {
+  num=$(env | grep -c WECHATY)
+  echo "WECHATY Environment Variables: $num"
+  env | grep WECHATY
+}
+
+function wechaty::errorCtrlC () {
   # http://www.tldp.org/LDP/abs/html/exitcodes.html
   # 130 Script terminated by Control-C  Ctl-C Control-C is fatal error signal 2, (130 = 128 + 2, see above)
   echo ' Script terminated by Control-C '
@@ -59,7 +75,8 @@ function wechaty::diagnose() {
   local -i ret=$1  && shift
   local file=$1 && shift
 
-: echo " exit code $ret "
+  echo "ERROR: Bot exited with code $ret"
+
   figlet ' BUG REPORT '
   wechaty::pressEnterToContinue 30
 
@@ -93,7 +110,7 @@ function wechaty::diagnose() {
   echo _____________________________________________________________
   echo '####### please paste all the above diagnose messages #######'
   echo
-  echo 'Wechaty Issue https://github.com/chatie/wechaty/issues'
+  echo 'Wechaty Issue https://github.com/wechaty/wechaty/issues'
   echo
 
   wechaty::pressEnterToContinue
@@ -120,6 +137,11 @@ function wechaty::runBot() {
     echo "Please make sure you had installed all the NPM modules which is depended on your bot script."
     # yarn < /dev/null || return $? # yarn will close stdin??? cause `read` command fail after yarn
 
+    #
+    # Issue https://github.com/wechaty/wechaty/issues/1478
+    #   As a conclusion: we should better not to link the local node_modules to the Docker global.
+    #
+    # wechaty::linkBotNodeModules
   }
 
   # echo -n "Linking Wechaty module to bot ... "
@@ -131,23 +153,27 @@ function wechaty::runBot() {
   local -i ret=0
   case "$botFile" in
     *.js)
-      if [ "$NODE_ENV" != "production" ]; then
-        echo "Executing babel-node --presets env $*"
-        # https://stackoverflow.com/a/34025957/1123955
-        BABEL_DISABLE_CACHE=1 babel-node --presets env "$@" &
-      else
+      if [ "$NODE_ENV" = "production" ]; then
         echo "Executing node $*"
         node "$@" &
+      else
+        echo "Executing babel-node --presets @babel/env $*"
+        # https://stackoverflow.com/a/34025957/1123955
+        BABEL_DISABLE_CACHE=1 babel-node --presets @babel/env "$@" &
       fi
       ;;
     *.ts)
-      # yarn add @types/node
-      echo "Executing ts-node $*"
-      ts-node "$@" &
+      if [ "$NODE_ENV" = "production" ]; then
+        echo "Executing ts-node $*"
+        ts-node "$@" &
+      else
+        echo "Executing ts-node --type-check $*"
+        ts-node --type-check "$@" &
+      fi
       ;;
     *)
       echo "ERROR: wechaty::runBot() neith .js nor .ts"
-      exit -1 &
+      exit 1 &
   esac
 
   wait "$!" || ret=$? # fix `can only `return' from a function or sourced script` error
@@ -166,6 +192,24 @@ function wechaty::runBot() {
   return "$ret"
 }
 
+# Issue https://github.com/wechaty/wechaty/issues/1478
+# To Be Tested:
+function wechaty::linkBotNodeModules() {
+  for localModule in /bot/node_modules/*; do
+    [ -e "$localModule" ] || continue
+
+    module=${localModule//\/bot\/node_modules\//}
+
+    globalModule="/node_modules/$module"
+
+    if [ ! -e "$globalModule" ]; then
+      ln -sf "$localModule" /node_modules/
+    # else
+      # echo "$globalModule exists"
+    fi
+  done
+}
+
 function wechaty::io-client() {
   figlet " Chatie.io "
   figlet " Authing By:"
@@ -173,7 +217,9 @@ function wechaty::io-client() {
   echo "WECHATY_TOKEN=$WECHATY_TOKEN "
   echo
 
+  pushd /wechaty
   npm run io-client
+  popd
 }
 
 function wechaty::help() {
@@ -187,8 +233,8 @@ function wechaty::help() {
   Run a JavaScript/TypeScript <Bot File>, or a <Wechaty Command>.
 
   <Bot File>:
-    mybot.js: a JavaScript program for your bot. will run by Node.js v7
-    mybot.ts: a TypeScript program for your bot. will run by ts-node/TypeScript v2
+    mybot.js: a JavaScript program for your bot.
+    mybot.ts: a TypeScript program for your bot.
 
   <Commands>:
     demo    Run Wechaty DEMO
@@ -196,7 +242,7 @@ function wechaty::help() {
     test    Run Unit Test
 
   Learn more at:
-    https://github.com/chatie/wechaty/wiki/Docker
+    https://github.com/wechaty/wechaty/wiki/Docker
 
 
 
@@ -205,16 +251,18 @@ HELP
 
 function main() {
   # issue #84
-  echo -e 'nameserver 114.114.114.114\nnameserver 114.114.115.115' | sudo tee -a /etc/resolv.conf > /dev/null
+  echo -e 'nameserver 114.114.114.114\nnameserver 1.1.1.1\nnameserver 8.8.8.8' | sudo tee -a /etc/resolv.conf > /dev/null
 
   wechaty::banner
   figlet Connecting
   figlet ChatBots
 
+  wechaty::printEnv
+
   VERSION=$(WECHATY_LOG=WARN wechaty-version 2>/dev/null || echo '0.0.0(unknown)')
 
   echo
-  echo -n "Starting Wechaty v$VERSION with "
+  echo -n "Starting Docker Container for Wechaty v$VERSION with "
   echo -n "Node.js $(node --version) ..."
   echo
 
@@ -259,7 +307,14 @@ function main() {
       ;;
 
     test)
-      WECHATY_LOG=silent npm run test:unit
+      # WECHATY_LOG=silent npm run test:unit
+      if [ -f "$HOME"/package.json ]; then
+        pushd "$HOME"
+      else
+        pushd /wechaty
+      fi
+      WECHATY_LOG=silent npm run test
+      popd
       ;;
 
     #

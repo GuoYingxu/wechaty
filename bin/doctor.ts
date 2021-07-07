@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
- *   Wechaty - https://github.com/chatie/wechaty
+ *   Wechaty Chatbot SDK - https://github.com/wechaty/wechaty
  *
- *   @copyright 2016-2017 Huan LI <zixia@zixia.net>
+ *   @copyright 2016 Huan LI (李卓桓) <https://github.com/huan>, and
+ *                   Wechaty Contributors <https://github.com/wechaty>.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -18,7 +19,7 @@
  *
  */
 
-import * as os from 'os'
+import os from 'os'
 
 import { config }   from '../src/config'
 import { Doctor }   from '../src/doctor'
@@ -27,17 +28,17 @@ import { Wechaty }  from '../src/wechaty'
 const wechaty = Wechaty.instance()
 const doctor = new Doctor()
 
-async function main() {
+async function main () {
   let ipcTestResult: string
   try {
     await doctor.testTcp()
     ipcTestResult = 'PASS'
   } catch (err) {
-    console.log(err)
+    console.info(err)
     ipcTestResult = 'FAIL. Please check your tcp network, Wechaty need to listen on localhost and connect to it.'
   }
 
-  console.log(`
+  console.info(`
   #### Wechaty Doctor
 
   1. Wechaty version: ${wechaty.version()}
@@ -51,4 +52,4 @@ async function main() {
 }
 
 main()
-.catch(err => console.error('main() exception: %s', err))
+  .catch(err => console.error('main() exception: %s', err))

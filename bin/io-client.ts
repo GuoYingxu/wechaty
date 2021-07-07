@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
- *   Wechaty - https://github.com/chatie/wechaty
+ *   Wechaty Chatbot SDK - https://github.com/wechaty/wechaty
  *
- *   @copyright 2016-2017 Huan LI <zixia@zixia.net>
+ *   @copyright 2016 Huan LI (李卓桓) <https://github.com/huan>, and
+ *                   Wechaty Contributors <https://github.com/wechaty>.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -18,12 +19,19 @@
  *
  */
 
+/* eslint-disable import/first */
+require('dotenv').config()
+
 import {
   config,
   log,
 }               from '../src/config'
 
-import IoClient from '../src/io-client'
+import {
+  IoClient,
+  IoClientOptions,
+}                   from '../src/io-client'
+import { Wechaty }  from '../src/wechaty'
 
 const welcome = `
 | __        __        _           _
@@ -42,30 +50,56 @@ __________________________________________________
 
 `
 
-let token = config.token
+async function main () {
+  const token = config.token
 
-if (!token) {
-  log.error('Client', 'token not found: please set WECHATY_TOKEN in environment before run io-client')
-  // process.exit(-1)
-  token = config.default.DEFAULT_TOKEN
-  log.warn('Client', `set token to "${token}" for demo purpose`)
+  if (!token) {
+    throw new Error('token not found: please set WECHATY_TOKEN in environment before run io-client')
+  }
+
+  console.info(welcome)
+  log.info('Client', 'Starting for WECHATY_TOKEN: %s', token)
+
+  const wechaty = new Wechaty({ name: token })
+
+  let port
+  if (process.env['WECHATY_HOSTIE_PORT']) {
+    /**
+     * https://github.com/wechaty/wechaty/issues/2122
+     */
+    log.warn('Wechaty', [
+      '',
+      'WECHATY_HOSTIE_PORT is deprecated.',
+      'Use WECHATY_PUPPET_SERVER_PORT instead.',
+      'See: https://github.com/wechaty/wechaty/issues/2122',
+    ].join(' '))
+    port = parseInt(process.env['WECHATY_HOSTIE_PORT'])
+  } else if (process.env['WECHATY_PUPPET_SERVER_PORT']) {
+    port = parseInt(process.env['WECHATY_PUPPET_SERVER_PORT'])
+  }
+
+  const options: IoClientOptions = {
+    token,
+    wechaty,
+  }
+  if (port) {
+    options.port = port
+  }
+
+  const client = new IoClient(options)
+
+  client.start()
+    .catch(onError.bind(client))
 }
 
-console.log(welcome)
-log.info('Client', 'Starting for WECHATY_TOKEN: %s', token)
-
-const client = new IoClient({
-  token,
-})
-
-client.init()
-    .catch(onError.bind(client))
-
-client.initWeb()
-    .catch(onError.bind(client))
-
-function onError(e) {
-  log.error('Client', 'initWeb() fail: %s', e)
-  this.quit()
+async function onError (
+  this : IoClient,
+  e    : Error,
+) {
+  log.error('Client', 'start() fail: %s', e)
+  await this.quit()
   process.exit(-1)
 }
+
+main()
+  .catch(console.error)

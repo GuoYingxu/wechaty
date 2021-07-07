@@ -1,10 +1,13 @@
 language: node_js
 node_js:
-  - "8"
+  - "10"
+  - "12"
+  - "13"
 
 os:
   - linux
   - osx
+  - windows
 
 addons:
   apt:
@@ -17,46 +20,49 @@ cache:
   directories:
     - node_modules
 
-before_install:
-  - if [ "$TRAVIS_OS_NAME" == 'osx' ]; then brew update; fi
-  - if [ "$TRAVIS_OS_NAME" == 'osx' ]; then brew cleanup; fi
-  - if [ "$TRAVIS_OS_NAME" == 'osx' ]; then brew cask cleanup; fi
-  - if [ "$TRAVIS_OS_NAME" == 'osx' ]; then brew install jq; fi
-  - if [ "$TRAVIS_OS_NAME" == 'osx' ]; then brew install moreutils; fi
-  - if [ "$TRAVIS_OS_NAME" == 'osx' ]; then brew install shellcheck; fi
-
-script:
-  - echo $TRAVIS_OS_NAME
-  - node --version
-  - npm --version
-  - npm test
-
-after_success:
-  - if [ "$TRAVIS_OS_NAME" == 'osx' ]; then npm run coverage; fi
-
 stages:
   - test
   - pack
   - name: deploy
-    if: branch =~ ^(master|v\d+\.\d+)
+    if: (type = push) AND branch =~ ^(master|v\d+\.\d+)$
+
+install:
+  - npm install
+
+script:
+  - node --version
+  - npm --version
+  - echo "Testing Started ..."
+  - if [ "$TRAVIS_OS_NAME" != 'linux' ]; then npm run test:unit; else npm run test; fi
+  - echo "Testing Finished"
 
 jobs:
   include:
+
     - stage: pack
       script:
-        - npm run test:pack && echo 'Npm packing test is passed'
+        - echo "NPM Pack Testing Started ..."
+        - npm version
+        - ./scripts/generate-version.sh
+        - npm run test:pack
+        - echo "NPM Pack Testing Finished."
 
     - stage: deploy
       script:
-        - echo "Deploying to NPM ..."
+        - echo "NPM Deploying Started ..."
         - npm version
+        - ./scripts/generate-version.sh
+        - ./scripts/package-publish-config-tag.sh
         - npm run dist
+        - echo "NPM Building Finished."
 
       deploy:
         provider: npm
         email: zixia@zixia.net
         api_key: "$NPM_TOKEN"
         skip_cleanup: true
+        on:
+          all_branches: true
 
 notifications:
   webhooks:
